@@ -5,7 +5,7 @@
 #include <GLFW/glfw3.h>
 #include <stdio.h>
 
-bool load_frame(const char* filename, int* width, int* height, unsigned char** data);
+bool load_frame(const char* filename, int* frame_width, int* frame_height, unsigned char** data);
 int main(int argc, char** argv) {
 
     GLFWwindow* window;
@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
         return -1;
 
     /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+    window = glfwCreateWindow(1280, 720, "Hello World", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -24,9 +24,9 @@ int main(int argc, char** argv) {
     
 
     /* Make the window's context current */
-    int width, height;
+    int frame_width, frame_height;
     unsigned char* data;
-    if (!load_frame("C:\\Private\\Anime\\RWBY Volume 1 (Complete)(720P_HD).mp4", &width, &height, &data)) {
+    if (!load_frame("C:\\Users\\hp\\Down\loads\\Video\\LIVESTREAM- Setting up FFmpeg and OpenGL in C++ for real-time video processing.mp4", &frame_width, &frame_height, &data)) {
         printf("couldn't laod frame\n");
         return -1;
     }
@@ -41,26 +41,26 @@ int main(int argc, char** argv) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, frame_width, frame_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        int window_width, window_height;
-        glfwGetFramebufferSize(window, &window_width, &window_height);
+        int window_frame_width, window_frame_height;
+        glfwGetFramebufferSize(window, &window_frame_width, &window_frame_height);
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        glOrtho(0, window_width, 0, window_height, -1, 1);
+        glOrtho(0, window_frame_width, window_frame_height, 0, -1, 1);
         glMatrixMode(GL_MODELVIEW);
         glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, tex_handle);
         glBegin(GL_QUADS);
-        glTexCoord2d(0, 0); glVertex2i(0, 0);
-        glTexCoord2d(1, 0); glVertex2i(width, 0);
-        glTexCoord2d(1, 1); glVertex2i(width, height);
-        glTexCoord2d(0, 1); glVertex2i(0, height);
+        glTexCoord2d(0, 0); glVertex2i(200, 200);
+        glTexCoord2d(1, 0); glVertex2i(200 + frame_width, 200);
+        glTexCoord2d(1, 1); glVertex2i(200 + frame_width, 200 + frame_height);
+        glTexCoord2d(0, 1); glVertex2i(200, 200 + frame_height);
 
         glEnd();
         glDisable(GL_TEXTURE_2D);
