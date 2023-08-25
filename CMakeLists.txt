@@ -24,7 +24,7 @@ elseif(LINUX)
 	)
 endif()
 list(APPEND SOURCES 
-	src/VFFmpeg.cpp src/VFFmpeg.h src/video.cpp
+	src/VFFmpeg.cpp src/VFFmpeg.h src/video.cpp src/video.hpp
 )
 # Add source to this project's executable.
 add_executable (VFFmpeg ${SOURCES})

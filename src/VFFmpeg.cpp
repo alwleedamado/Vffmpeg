@@ -4,8 +4,8 @@
 #include "VFFmpeg.h"
 #include <GLFW/glfw3.h>
 #include <stdio.h>
+#include "video.hpp"
 
-bool load_frame(const char* filename, int* frame_width, int* frame_height, unsigned char** data);
 int main(int argc, char** argv) {
 
     GLFWwindow* window;
@@ -24,12 +24,14 @@ int main(int argc, char** argv) {
     
 
     /* Make the window's context current */
-    int frame_width, frame_height;
-    unsigned char* data;
-    if (!load_frame("C:\\Users\\hp\\Down\loads\\Video\\LIVESTREAM- Setting up FFmpeg and OpenGL in C++ for real-time video processing.mp4", &frame_width, &frame_height, &data)) {
+    VideoReaderState video_state;
+    if (!video_reader_open(&video_state, "C:\\Users\\hp\\Down\loads\\Video\\LIVESTREAM- Setting up FFmpeg and OpenGL in C++ for real-time video processing.mp4")) {
         printf("couldn't laod frame\n");
         return -1;
     }
+    const int frame_width = video_state.width;
+    const int frame_height = video_state.height;
+    uint8_t* data = new uint8_t[frame_width * frame_height * 4];
     glfwMakeContextCurrent(window);
 
     GLuint tex_handle;
@@ -41,19 +43,27 @@ int main(int argc, char** argv) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, frame_width, frame_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(window))
     {
         /* Render here */
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        int window_frame_width, window_frame_height;
-        glfwGetFramebufferSize(window, &window_frame_width, &window_frame_height);
+        int window_width, window_height;
+        glfwGetFramebufferSize(window, &window_width, &window_height);
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        glOrtho(0, window_frame_width, window_frame_height, 0, -1, 1);
+        glOrtho(0, window_width, window_height, 0, -1, 1);
         glMatrixMode(GL_MODELVIEW);
+
+        glBindTexture(GL_TEXTURE_2D, tex_handle);
+        if (!read_frame(&video_state, data)) {
+            printf("Falied to read frame\n");
+            return 1;
+        }
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, frame_width, frame_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+
         glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, tex_handle);
         glBegin(GL_QUADS);
@@ -70,7 +80,7 @@ int main(int argc, char** argv) {
         /* Poll for and process events */
         glfwPollEvents();
     }
-
+    video_reader_close(&video_state);
     glfwTerminate();
     return 0;
 }
