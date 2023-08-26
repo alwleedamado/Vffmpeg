@@ -24,10 +24,12 @@ elseif(LINUX)
 	)
 endif()
 list(APPEND SOURCES 
-	src/VFFmpeg.cpp src/VFFmpeg.h src/video.cpp src/video.hpp
+	src/VFFmpeg.cpp src/VFFmpeg.h
 )
 # Add source to this project's executable.
-add_executable (VFFmpeg ${SOURCES})
+add_executable (VFFmpeg ${SOURCES}
+		src/codecs/VideoDecoder.cpp
+		src/codecs/VideoDecoder.h)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET VFFmpeg PROPERTY CXX_STANDARD 20)

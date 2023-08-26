@@ -4,7 +4,7 @@
 #include "VFFmpeg.h"
 #include <GLFW/glfw3.h>
 #include <stdio.h>
-#include "video.hpp"
+#include "codecs/VideoDecoder.h"
 
 int main(int argc, char** argv) {
 
@@ -22,16 +22,15 @@ int main(int argc, char** argv) {
         return -1;
     }
     
-
+    VideoDecoder decoder;
     /* Make the window's context current */
-    VideoReaderState video_state;
-    if (!video_reader_open(&video_state, "C:\\Users\\hp\\Down\loads\\Video\\LIVESTREAM- Setting up FFmpeg and OpenGL in C++ for real-time video processing.mp4")) {
+    if (!decoder.openFIle("C:\\Users\\hp\\Down\loads\\Video\\LIVESTREAM- Setting up FFmpeg and OpenGL in C++ for real-time video processing.mp4")) {
         printf("couldn't laod frame\n");
         return -1;
     }
-    const int frame_width = video_state.width;
-    const int frame_height = video_state.height;
-    uint8_t* data = new uint8_t[frame_width * frame_height * 4];
+    const int frame_width = decoder.getWidth();
+    const int frame_height = decoder.getHeight();
+    auto* data = new uint8_t[frame_width * frame_height * 4];
     glfwMakeContextCurrent(window);
 
     GLuint tex_handle;
@@ -57,7 +56,7 @@ int main(int argc, char** argv) {
         glMatrixMode(GL_MODELVIEW);
 
         glBindTexture(GL_TEXTURE_2D, tex_handle);
-        if (!read_frame(&video_state, data)) {
+        if (!decoder.decodeFrame(data)) {
             printf("Falied to read frame\n");
             return 1;
         }
@@ -80,7 +79,6 @@ int main(int argc, char** argv) {
         /* Poll for and process events */
         glfwPollEvents();
     }
-    video_reader_close(&video_state);
     glfwTerminate();
     return 0;
 }
